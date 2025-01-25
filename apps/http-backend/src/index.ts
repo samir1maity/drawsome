@@ -1,5 +1,13 @@
-import express from 'express'
+import express from "express";
+import userRouter from "./routes/user.route";
 
-const app = express()
+const app = express();
 
-app.listen(3000)
+app.get("/", (req, res) => {
+  res.send("you are tunned");
+  console.log('reached')
+});
+
+app.use("/api/v1/user", userRouter);
+
+app.listen(3004);
