@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { userSigninSchema } from "@repo/common/types";
+import { prisma } from "@repo/db/client";
 
-export function login(req: Request, res: Response) {
+export async function login(req: Request, res: Response) {
   const data = userSigninSchema.safeParse(req.body);
 
   if (!data.success) {
