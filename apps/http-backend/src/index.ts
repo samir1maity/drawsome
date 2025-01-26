@@ -2,6 +2,7 @@ import express from "express";
 import userRouter from "./routes/user.route";
 
 const app = express();
+app.use(express.json())
 
 app.get("/", (req, res) => {
   res.send("you are tunned");

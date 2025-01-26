@@ -1,32 +1,69 @@
 import { Request, Response } from "express";
-import { userSigninSchema } from "@repo/common/types";
+import { userSigninSchema } from '@rep/common/types'
 import { prisma } from "@repo/db/client";
+import * as bcrypt from "bcrypt";
 
-export async function login(req: Request, res: Response) {
-  const data = userSigninSchema.safeParse(req.body);
+export async function signup(req: Request, res: Response) {
+  try {
+    const data = userSigninSchema.safeParse(req.body);
+    console.log("data", data.error);
+    if (!data.success) {
+      res.status(400).json({
+        status: 400,
+        is_error: true,
+        message: "bad inputs",
+      });
+      return
+    }
+    const { email, password } = req.body;
 
-  if (!data.success) {
-    res.status(400).json({
-      status: 400,
+    const isExist = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    if (isExist) {
+      res.status(409).json({
+        is_error: true,
+        message: "user is already exist",
+      });
+      return
+    }
+
+    console.log("isExist user", isExist);
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    console.log("hashedPassword", hashedPassword);
+
+    await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+      },
+    });
+
+    res.status(200).json({
+      is_error: false,
+      success: true,
+      message: "successfully signed up",
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error while signup proccess :", error.message);
+    } else {
+      console.error("Unknown error:", error);
+    }
+    res.status(500).json({
       is_error: true,
-      message: "bad inputs",
+      message: "Internal server error",
+      success: false,
     });
   }
-
-  const { email, password } = req.body;
-
-  // write logic
-  // db connection
-
-  res.status(200).json({
-    is_error: false,
-    success: true,
-    data: "token",
-    message: "you reache to the signin route",
-  });
 }
 
-export function signup(req: Request, res: Response) {
+export function login(req: Request, res: Response) {
   const { email, password } = req.body;
 
   //
